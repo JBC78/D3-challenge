@@ -1,16 +1,17 @@
 // Define SVG area dimensions
-var svgWidth = 960;
+var svgWidth = 1000;
 var svgHeight = 500;
 // Define the chart's margins as an object
 var chartMargin = {
     top: 20,
     right: 40,
     bottom: 80,
-    left: 25
+    left: 50
 };
 // Define dimensions of the chart area
 var chartWidth = svgWidth - chartMargin.left - chartMargin.right;
 var chartHeight = svgHeight - chartMargin.top - chartMargin.bottom;
+
 // Select body, append SVG area to it, and set the dimensions
 var svg = d3
   .select("#scatter")
@@ -24,24 +25,30 @@ var chartGroup = svg.append("g")
 
 // Load data from data.csv
 d3.csv("assets/data/data.csv").then(function(censusData) {
-console.log(censusData)
+
     // Print the d3Data
-    // console.log(d3Data);
+    // console.log(censusData);
 
     // Cast the hours value to a number for each piece of d3Data
     censusData.forEach(function(data) {
         data.poverty = +data.poverty;
         data.healthcare = +data.healthcare;
         data.abbr = data.abbr;
+        data.state = data.state;
     });  
 
     // Create scale functions
     // ==============================
+    var xMin = d3.min(censusData, d => d.poverty);
+    var xMax = d3.max(censusData, d => d.poverty);
     var xLinearScale = d3.scaleLinear()
-      .domain([20, d3.max(censusData, d => d.poverty)])
+      .domain([xMin*.9,xMax*1.05])
       .range([0, chartWidth]);
+
+    var yMin = d3.min(censusData, d => d.healthcare);
+    var yMax = d3.max(censusData, d => d.healthcare);
     var yLinearScale = d3.scaleLinear()
-      .domain([0, d3.max(censusData, d => d.healthcare)])
+      .domain([yMin*.8, yMax*1.05])
       .range([chartHeight, 0]);
     // Create axis functions
     // ==============================
@@ -87,14 +94,14 @@ console.log(censusData)
         .style("fill", "white")
         .attr("font-weight", "bold");
 
-
     // Step 6: Initialize tool tip
     // ==============================
     var toolTip = d3.tip()
       .attr("class", "tooltip")
-      .offset([80, -60])
+      // .offset([80, -10])
+    
       .html(function(d) {
-        return (`${d.abbr}<hr>${d.poverty}`)
+        return (`${d.state}<br>${d.poverty} %`)
       });
     
     // Step 7: Create tooltip in the chart
@@ -112,19 +119,19 @@ console.log(censusData)
       });
     // Create axis labels
 
-  //   chartGroup.append("text")
-  //     .attr("transform", "rotate(-90)")
-  //     .attr("y", 0 - margin.left + 40)
-  //     .attr("x", 0 - (chartHeight / 2))
-  //     .attr("dy", "1em")
-  //     .attr("class", "axisText")
-  //     .text("Lacks Healthcare(%)");
+    chartGroup.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - chartMargin.left)
+      .attr("x", 0 - (chartHeight / 1.5))
+      .attr("dy", "1em")
+      .attr("class", "axisText")
+      .text("Lacks Healthcare (%)");
 
-  //   chartGroup.append("text")
-  //     .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + margin.top + 30})`)
-  //     .attr("class", "axisText")
-  //     .text("In Poverty(%)");
-  // }).catch(function(error) {
-  //   console.log(error);
+    chartGroup.append("text")
+      .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + chartMargin.top +20})`)
+      .attr("class", "axisText")
+      .text("In Poverty (%)");
+  }).catch(function(error) {
+    console.log(error);
   });
 
